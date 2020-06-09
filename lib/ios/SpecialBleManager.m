@@ -75,7 +75,8 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
 -(void)advertise:(NSString *)serviceUUIDString publicKey:(NSString*)publicKey withEventEmitter:(RCTEventEmitter*)emitter {
     self.eventEmitter = emitter;
     self.advertiseUUIDString = serviceUUIDString;
-    self.publicKey = [NSString stringWithFormat:@"%@-%@", [[UIDevice currentDevice] name], publicKey];
+    //self.publicKey = [NSString stringWithFormat:@"%@-%@", [[UIDevice currentDevice] name], publicKey];
+    self.publicKey = publicKey;
     if (self.cbPeripheral.state != CBManagerStatePoweredOn) {
         return;
     }
