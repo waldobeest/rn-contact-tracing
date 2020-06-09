@@ -214,7 +214,8 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
         @"device_tx": tx
     };
 
-    [self.eventEmitter sendEventWithName:EVENTS_FOUND_DEVICE body:device];
+    // Removed this since we dont need on foundDevice in the JS code.
+    //[self.eventEmitter sendEventWithName:EVENTS_FOUND_DEVICE body:device];
 
     [DBClient addDevice:device];
 }
