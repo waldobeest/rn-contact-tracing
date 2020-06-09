@@ -115,7 +115,7 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
 
 -(void) _advertise {
     if (self.cbPeripheral.state == CBManagerStatePoweredOn){
-        
+
         [self.cbPeripheral startAdvertising:@{CBAdvertisementDataLocalNameKey: self.publicKey, CBAdvertisementDataServiceUUIDsKey: @[self.service.UUID]}];
         [self.eventEmitter sendEventWithName:EVENTS_ADVERTISE_STATUS body:[NSNumber numberWithBool:YES]];
     }
@@ -148,7 +148,7 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
                     break;
                 case CBManagerStatePoweredOn:
                     NSLog(@"cntral.state is Powered on");
-                    
+
                     [self scan:self.scanUUIDString withEventEmitter:self.eventEmitter];
                     break;
                 default:
@@ -164,32 +164,47 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
     NSString* public_key = @"";
     NSNumber* device_first_timestamp = @0;
     NSNumber *tx = @0;
-    
+
     NSLog(@"Discovered device with name: %@", peripheral.name);
     if (peripheral && peripheral.name != nil) {
         name = peripheral.name;
     }
-    
     if (advertisementData && advertisementData[CBAdvertisementDataServiceDataKey] && advertisementData[CBAdvertisementDataServiceUUIDsKey]) {
         NSDictionary *dataService = advertisementData[CBAdvertisementDataServiceDataKey];
         CBUUID *serviceUUID = advertisementData[CBAdvertisementDataServiceUUIDsKey][0];
-        
+
         NSData *data = dataService[serviceUUID];
 
         NSString *addressFromData = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         public_key = addressFromData;
     } else if (advertisementData && advertisementData[CBAdvertisementDataLocalNameKey]) {
         public_key = advertisementData[CBAdvertisementDataLocalNameKey];
+        // TODO add MAC Address here? Could be a security concern
     }
-    
+
     if (advertisementData && advertisementData[@"kCBAdvDataTimestamp"]) {
-        device_first_timestamp = advertisementData[@"kCBAdvDataTimestamp"];
+        NSNumber *timestamp_since_2001 = advertisementData[@"kCBAdvDataTimestamp"];
+
+        NSTimeInterval absolute_timestamp_since_2001 = timestamp_since_2001.doubleValue;
+
+        NSDate *timestamp_date = [NSDate dateWithTimeIntervalSinceReferenceDate:absolute_timestamp_since_2001];
+        NSNumber *secondsSinceRefDate = [NSNumber numberWithDouble:[timestamp_date timeIntervalSinceReferenceDate]];
+
+        device_first_timestamp = secondsSinceRefDate;
+        // TODO reviw if this needs to be in seconds or milliseconds
+        NSLog(@"Seen using kCBAdvDataTimestamp @ device_first_timestamp: %@", device_first_timestamp);
+    } else {
+        // If no broadcast timestamp, assume now.
+        NSDate *dateNow = [NSDate date];
+        NSTimeInterval timeIntervalNow = [dateNow timeIntervalSince1970];
+        device_first_timestamp = @(timeIntervalNow * 1000);
+        NSLog(@"Seen using default NOW @ device_first_timestamp: %@", device_first_timestamp);
     }
-    
+
     if (advertisementData && advertisementData[CBAdvertisementDataTxPowerLevelKey]) {
         tx = advertisementData[CBAdvertisementDataTxPowerLevelKey];
     }
-    
+
     NSDictionary* device = @{
         @"public_key": public_key,
         @"device_rssi": RSSI,
@@ -197,16 +212,16 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
         @"device_last_timestamp": device_first_timestamp,
         @"device_tx": tx
     };
-    
+
     [self.eventEmitter sendEventWithName:EVENTS_FOUND_DEVICE body:device];
-    
+
     [DBClient addDevice:device];
 }
 
 #pragma mark - CBPeripheralDelegate
 
 - (void)peripheralManagerDidUpdateState:(CBPeripheralManager *)peripheral {
-    NSLog(@"Peripheral manager atate: %d", peripheral.state);
+    NSLog(@"Peripheral manager state: %d", peripheral.state);
     [self advertise:self.advertiseUUIDString publicKey:self.publicKey withEventEmitter:self.eventEmitter];
 }
 
