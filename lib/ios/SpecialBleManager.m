@@ -76,7 +76,7 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
     self.eventEmitter = emitter;
     self.advertiseUUIDString = serviceUUIDString;
     //self.publicKey = [NSString stringWithFormat:@"%@-%@", [[UIDevice currentDevice] name], publicKey];
-    self.publicKey = publicKey;
+    self.publicKey = [NSString stringWithFormat:@"%@", publicKey];
     if (self.cbPeripheral.state != CBManagerStatePoweredOn) {
         return;
     }
@@ -214,8 +214,7 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
         @"device_tx": tx
     };
 
-    // Removed this since we dont need on foundDevice in the JS code.
-    //[self.eventEmitter sendEventWithName:EVENTS_FOUND_DEVICE body:device];
+    [self.eventEmitter sendEventWithName:EVENTS_FOUND_DEVICE body:device];
 
     [DBClient addDevice:device];
 }
