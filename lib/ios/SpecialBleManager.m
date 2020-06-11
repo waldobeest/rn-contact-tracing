@@ -183,24 +183,24 @@ NSString *const EVENTS_ADVERTISE_STATUS     = @"advertisingStatus";
         // TODO add MAC Address here? Could be a security concern
     }
 
-    if (advertisementData && advertisementData[@"kCBAdvDataTimestamp"]) {
-        NSNumber *timestamp_since_2001 = advertisementData[@"kCBAdvDataTimestamp"];
-
-        NSTimeInterval absolute_timestamp_since_2001 = timestamp_since_2001.doubleValue;
-
-        NSDate *timestamp_date = [NSDate dateWithTimeIntervalSinceReferenceDate:absolute_timestamp_since_2001];
-        NSNumber *secondsSinceRefDate = [NSNumber numberWithDouble:[timestamp_date timeIntervalSinceReferenceDate]];
-
-        device_first_timestamp = secondsSinceRefDate;
-        // TODO reviw if this needs to be in seconds or milliseconds
-        NSLog(@"Seen using kCBAdvDataTimestamp @ device_first_timestamp: %@", device_first_timestamp);
-    } else {
+//     if (advertisementData && advertisementData[@"kCBAdvDataTimestamp"]) {
+//         NSNumber *timestamp_since_2001 = advertisementData[@"kCBAdvDataTimestamp"];
+//
+//         NSTimeInterval absolute_timestamp_since_2001 = timestamp_since_2001.doubleValue;
+//
+//         NSDate *timestamp_date = [NSDate dateWithTimeIntervalSinceReferenceDate:absolute_timestamp_since_2001];
+//         NSNumber *secondsSinceRefDate = [NSNumber numberWithDouble:[timestamp_date timeIntervalSinceReferenceDate]];
+//
+//         device_first_timestamp = secondsSinceRefDate;
+//         // TODO reviw if this needs to be in seconds or milliseconds
+//         NSLog(@"Seen using kCBAdvDataTimestamp @ device_first_timestamp: %@", device_first_timestamp);
+//     } else {
         // If no broadcast timestamp, assume now.
         NSDate *dateNow = [NSDate date];
         NSTimeInterval timeIntervalNow = [dateNow timeIntervalSince1970];
         device_first_timestamp = @(timeIntervalNow * 1000);
         NSLog(@"Seen using default NOW @ device_first_timestamp: %@", device_first_timestamp);
-    }
+//     }
 
     if (advertisementData && advertisementData[CBAdvertisementDataTxPowerLevelKey]) {
         tx = advertisementData[CBAdvertisementDataTxPowerLevelKey];
